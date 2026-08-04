@@ -69,5 +69,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
     })
     .filter((route) => route !== undefined)
 
-  return uniqueRoutes as MetadataRoute.Sitemap
+  return uniqueRoutes
 }

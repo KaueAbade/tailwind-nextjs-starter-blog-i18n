@@ -36,7 +36,7 @@ const TocBody = ({ toc }: TocBodyProps): React.JSX.Element | null => {
     return null
   }
 
-  const filteredToc = filterToc(toc as TocItem[])
+  const filteredToc = filterToc(toc)
 
   return (
     <div className="fixed top-0 left-0 z-50 h-screen md:flex">
