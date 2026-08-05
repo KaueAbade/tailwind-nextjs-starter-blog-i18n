@@ -1,0 +1,453 @@
+---
+title: Novas funcionalidades na V.1
+series:
+  order: 2
+  title: "Blog Starter"
+date: '2021-08-07'
+lastmod: '2021-02-01'
+language: pt
+tags: ['next-js', 'tailwind', 'guide']
+authors: ['tailsazimuth']
+draft: false
+summary: Uma visão geral das novas funcionalidades lançadas na v1 - cópia de bloco de código, múltiplos autores, layout via frontmatter, etc.
+bibliography: references-data.bib
+---
+
+## Visão geral
+
+Um artigo sobre as novas funcionalidades introduzidas na v1.0. Novas funcionalidades:
+
+<TOCInline toc={props.toc} exclude="Overview" toHeading={2} />
+
+O primeiro carregamento de JS caiu de 43 Kb para 39 Kb apesar de todas as novas funcionalidades adicionadas! [^1]
+
+[^1]: Com as novas mudanças no Nextjs 12, o primeiro carregamento de JS sobe para 45 Kb.
+
+Confira o [guia de atualização](#upgrade-guide) abaixo se você estiver migrando a partir da versão v0 do modelo.
+
+## Cores do tema
+
+Você pode facilmente alterar a cor do tema modificando o atributo primário no arquivo de configuração do tailwind:
+
+```js:tailwind.config.js
+theme: {
+    colors: {
+      primary: colors.teal,
+      gray: colors.neutral,
+      ...
+    }
+  ...
+}
+```
+
+O atributo de cor primária deve receber um objeto com chaves de 50, 100, 200 ... 900 e os respectivos valores de código de cor.
+
+O Tailwind inclui ótimas paletas de cores padrão que podem ser usadas para criar um tema para o seu próprio site. Confira a [página de documentação sobre personalização de cores](https://tailwindcss.com/docs/customizing-colors) para conhecer a gama completa de opções.
+
+Está migrando da v1? Você pode voltar ao tema anterior definindo `primary` como `colors.sky` (Tailwind 2.2.2 e superior, caso contrário `colors.lightBlue`) e alterando o gray para `colors.gray`.
+
+Desde a v1.1.2+, você também pode personalizar facilmente o estilo dos seus blocos de código modificando a folha de estilo `css/prism.css`. Os nomes das classes de tokens são compatíveis com o prismjs,
+então você pode copiar e adaptar os estilos de tokens de uma folha de estilo prismjs, por exemplo. [temas prism](https://github.com/PrismJS/prism-themes).
+
+## Compilador Xdm MDX
+
+Trocamos o bundler MDX de [next-mdx-remote](https://github.com/hashicorp/next-mdx-remote) para [mdx-bundler](https://github.com/kentcdodds/mdx-bundler).
+Isso usa [xdm](https://github.com/wooorm/xdm) por baixo dos panos, as bibliotecas mais recentes Micromark 3 e Remark, Rehype.
+
+**Aviso:** Se você estava usando bibliotecas remark ou rehype personalizadas, faça a atualização para versões compatíveis com o Micromark 3. Se você fizer a atualização, remova `node_modules` e `package-lock.json` para evitar problemas relacionados a dependências antigas.
+
+O [xdm](https://github.com/wooorm/xdm) contém várias melhorias em relação ao [@mdx-js/mdx](https://github.com/mdx-js/mdx), o compilador usado internamente pelo next-mdx-remote, mas pode haver mudanças de comportamento importantes.
+Verifique sua saída em markdown para confirmar.
+
+Algumas novas possibilidades incluem carregar componentes diretamente no arquivo mdx usando a sintaxe de import e incluir código js que pode ser compilado e empacotado durante a etapa de build.
+
+Por exemplo, o trecho jsx a seguir pode ser usado diretamente em um arquivo MDX para exibir o componente de título de página:
+
+```jsx
+// Or import PageTitle from './components/PageTitle.js' if you are using js
+import PageTitle from './components/PageTitle.tsx'
+;<PageTitle> Using JSX components in MDX </PageTitle>
+```
+
+A configuração padrão resolve todos os componentes relativos ao diretório `components`.
+
+**Nota**:
+Componentes que dependem de carregadores de imagem externos também exigem configuração adicional do esbuild.
+Componentes que dependem do estado global da aplicação ao longo do ciclo de vida, como o componente `Link` do Nextjs, também não funcionariam com essa configuração, já que cada arquivo mdx é compilado independentemente.
+Nesses casos, é melhor usar a substituição de componentes.
+
+## Componente de sumário (table of contents)
+
+Inspirado pelo [Docusaurus](https://docusaurus.io/docs/next/markdown-features/inline-toc) e pelo [gatsby-remark-table-of-contents](https://www.gatsbyjs.com/plugins/gatsby-remark-table-of-contents/),
+a variável `toc`, contendo todos os cabeçalhos de nível superior do documento, é passada para o arquivo MDX e pode ser estilizada de acordo.
+Para simplificar a geração de um sumário (TOC), você pode usar o componente `TOCInline` já existente.
+
+Por exemplo, o sumário deste artigo foi gerado com o seguinte código:
+
+```jsx
+<TOCInline toc={props.toc} exclude="Overview" toHeading={2} />
+```
+
+Você pode personalizar os títulos exibidos configurando as props `fromHeading` e `toHeading`, ou excluir títulos específicos
+passando uma string ou array de strings para a prop `exclude`. Por padrão, todos os títulos com profundidade 3 ou menor são recuados. Isso pode ser configurado modificando a prop `indentDepth`.
+Uma prop `asDisclosure` pode ser usada para renderizar o sumário em um elemento expansível (disclosure).
+
+Aqui está o sumário completo renderizado em um elemento disclosure.
+
+```jsx
+<TOCInline toc={props.toc} asDisclosure />
+```
+
+<TOCInline toc={props.toc} asDisclosure />
+
+## Layouts
+
+Você pode mapear o conteúdo mdx do blog para componentes de layout configurando o campo do frontmatter. Por exemplo, este artigo é escrito com o novo layout `PostSimple`!
+
+### Adicionando novos modelos
+
+Os modelos de layout são armazenados na pasta `./layouts`. Você pode adicionar seus componentes React que deseja mapear para o conteúdo markdown nessa pasta.
+O nome do arquivo do componente deve corresponder ao especificado no campo `layout` do frontmatter markdown.
+
+O único campo obrigatório é `children`, que contém o conteúdo MDX renderizado, embora você provavelmente queira passar o conteúdo do frontMatter e renderizá-lo no modelo.
+
+Você pode configurar o modelo para levar em conta outros campos - veja o componente `PostLayout` como exemplo.
+
+Aqui está um exemplo de layout que você pode personalizar ainda mais:
+
+```jsx
+export default function ExampleLayout({ frontMatter, children }) {
+  const { date, title } = frontMatter
+
+  return (
+    <SectionContainer>
+      <div>{date}</div>
+      <h1>{title}</h1>
+      <div>{children}</div>
+    </SectionContainer>
+  )
+}
+```
+
+### Configurando o frontmatter de uma publicação do blog
+
+Use o campo `layout` do frontmatter para especificar o modelo para o qual deseja mapear a publicação markdown. Veja como fica o conteúdo deste artigo:
+
+```
+---
+title: 'Novas funcionalidades na V.1'
+date: '2021-05-26   '
+tags: ['next-js', 'tailwind', 'guide']
+draft: false
+summary: 'Apresentando as novas funcionalidades do modelo de layout - você pode mapear o conteúdo mdx do blog para componentes de layout configurando o campo do frontmatter'
+layout: PostSimple
+---
+```
+
+Você pode configurar o layout padrão na respectiva seção de página modificando a variável `DEFAULT_LAYOUT`.
+O `DEFAULT_LAYOUT` da página para publicações do blog é definido como `PostLayout`.
+
+### Estendendo
+
+`layout` é mapeado para o wrapper que envolve todo o conteúdo MDX.
+
+```jsx
+export const MDXComponents = {
+  Image,
+  a: CustomLink,
+  pre: Pre,
+  wrapper: ({ components, layout, ...rest }) => {
+    const Layout = require(`../layouts/${layout}`).default
+    return <Layout {...rest} />
+  },
+}
+
+export const MDXLayoutRenderer = ({ layout, mdxSource, ...rest }) => {
+  const MDXLayout = useMemo(() => getMDXComponent(mdxSource), [mdxSource])
+
+  return <MDXLayout layout={layout} components={MDXComponents} {...rest} />
+}
+```
+
+Use o componente `MDXLayoutRenderer` em uma página onde você deseja aceitar um nome de layout a ser mapeado para o layout desejado.
+Você deve passar o nome do layout a partir da pasta de layouts (deve corresponder exatamente).
+
+## Analytics
+
+O modelo agora suporta [plausible](https://plausible.io/), [simple Analytics](https://simpleanalytics.com/) e Google Analytics.
+Configure `siteMetadata.js` com os parâmetros correspondentes ao provedor de analytics desejado.
+
+```js
+analytics: {
+    // supports plausible, simpleAnalytics or googleAnalytics
+    plausibleDataDomain: '', // e.g. tailwind-nextjs-starter-blog.vercel.app
+    simpleAnalytics: false, // true or false
+    googleAnalyticsId: '', // e.g. UA-000000-2 or G-XXXXXXX
+  },
+```
+
+Eventos personalizados também são suportados. Você pode importar a função `logEvent` do arquivo `@components/analytics/[ANALYTICS-PROVIDER]` e chamá-la ao
+disparar determinados eventos de interesse. _Observação_: configuração adicional pode ser necessária dependendo do provedor de analytics; consulte a documentação
+oficial deles para mais informações.
+
+## Sistema de comentários do blog
+
+Também adicionamos suporte para [giscus](https://github.com/laymonage/giscus), [utterances](https://github.com/utterance/utterances) ou disqus.
+Para ativar, basta configurar a propriedade de comentários em `siteMetadata.js` com o provedor e os parâmetros desejados, conforme especificado no arquivo de configuração.
+
+```js
+comment: {
+    // Select a provider and use the environment variables associated to it
+    // https://vercel.com/docs/environment-variables
+    provider: 'giscus', // supported providers: giscus, utterances, disqus
+    giscusConfig: {
+      // Visit the link below, and follow the steps in the 'configuration' section
+      // https://giscus.app/
+      repo: process.env.NEXT_PUBLIC_GISCUS_REPO,
+      repositoryId: process.env.NEXT_PUBLIC_GISCUS_REPOSITORY_ID,
+      category: process.env.NEXT_PUBLIC_GISCUS_CATEGORY,
+      categoryId: process.env.NEXT_PUBLIC_GISCUS_CATEGORY_ID,
+      mapping: 'pathname', // supported options: pathname, url, title
+      reactions: '1', // Emoji reactions: 1 = enable / 0 = disable
+      // Send discussion metadata periodically to the parent window: 1 = enable / 0 = disable
+      metadata: '0',
+      // theme example: light, dark, dark_dimmed, dark_high_contrast
+      // transparent_dark, preferred_color_scheme, custom
+      theme: 'light',
+      // theme when dark mode
+      darkTheme: 'transparent_dark',
+      // If the theme option above is set to 'custom`
+      // please provide a link below to your custom theme css file.
+      // example: https://giscus.app/themes/custom_example.css
+      themeURL: '',
+    },
+    utterancesConfig: {
+      // Visit the link below, and follow the steps in the 'configuration' section
+      // https://utteranc.es/
+      repo: process.env.NEXT_PUBLIC_UTTERANCES_REPO,
+      issueTerm: '', // supported options: pathname, url, title
+      label: '', // label (optional): Comment 💬
+      // theme example: github-light, github-dark, preferred-color-scheme
+      // github-dark-orange, icy-dark, dark-blue, photon-dark, boxy-light
+      theme: '',
+      // theme when dark mode
+      darkTheme: '',
+    },
+    disqus: {
+      // https://help.disqus.com/en/articles/1717111-what-s-a-shortname
+      shortname: process.env.NEXT_PUBLIC_DISQUS_SHORTNAME,
+    },
+  },
+```
+
+## Múltiplos autores
+
+As informações dos autores agora estão separadas do `siteMetadata.js` e armazenadas em sua própria pasta `data/authors` como arquivo markdown. No mínimo, você precisará de um arquivo `default.md` com as informações do autor. Você pode criar arquivos adicionais conforme necessário, e o nome do arquivo será usado como referência ao autor.
+
+Veja como pode ser um arquivo markdown de autor:
+
+```md:default.md
+---
+name: Tails Azimuth
+avatar: /static/images/avatar.png
+occupation: Professor de Ciências Atmosféricas
+company: Universidade de Stanford
+email: address@yoursite.com
+twitter: https://twitter.com/Twitter
+linkedin: https://www.linkedin.com
+github: https://github.com
+---
+
+Descrição longa sobre você...
+```
+
+Você pode usar essas informações em vários lugares do modelo. Por exemplo, na seção "sobre" da página, buscamos as informações do autor padrão com esta linha de código:
+
+```js
+const authorDetails = await getFileBySlug('authors', ['default'])
+```
+
+Isso é renderizado no modelo `AuthorLayout`.
+
+### Múltiplos autores na publicação do blog
+
+O frontmatter de uma publicação do blog aceita um campo opcional de array `authors`. Se nenhum campo for especificado, assume-se que o autor padrão está sendo usado. Basta passar um array de autores para exibir múltiplos autores associados a uma publicação.
+
+Por exemplo, o frontmatter a seguir exibirá os autores dados por `data/authors/default.md` e `data/authors/sparrowhawk.md`
+
+```yaml
+title: 'My first post'
+date: '2021-01-12'
+draft: false
+summary: 'My first post'
+authors: ['default', 'sparrowhawk']
+```
+
+Uma demonstração de um artigo com múltiplos autores é apresentada em [Apresentando o Blog Starter Tailwind Nextjs](/blog/apresentando-o-blog-starter-tailwind-nextjs).
+
+## Botão de copiar para blocos de código
+
+Passe o mouse sobre um bloco de código e você notará um botão de cópia inspirado no GitHub! Você pode modificar `./components/Pre.js` para personalizá-lo ainda mais.
+O componente é passado para `MDXComponents` e modifica todos os blocos `<pre>`.
+
+## Destaque de linhas e números de linha
+
+Destaque de linhas e números de linha agora são suportados nativamente graças ao novo [plugin rehype-prism-plus](https://github.com/timlrx/rehype-prism-plus)
+
+O seguinte bloco de código javascript:
+
+````
+```js {1, 3-4} showLineNumbers
+var num1, num2, sum
+num1 = prompt('Enter first number')
+num2 = prompt('Enter second number')
+sum = parseInt(num1) + parseInt(num2) // "+" means "add"
+alert('Sum = ' + sum) // "+" means combine into a string
+```
+````
+
+vai aparecer assim
+
+```js {1,3-4} showLineNumbers
+var num1, num2, sum
+num1 = prompt('Enter first number')
+num2 = prompt('Enter second number')
+sum = parseInt(num1) + parseInt(num2) // "+" means "add"
+alert('Sum = ' + sum) // "+" means combine into a string
+```
+
+Para modificar os estilos, altere os seguintes seletores de classe no arquivo `prism.css`:
+
+```css
+.code-highlight {
+  @apply float-left min-w-full;
+}
+
+.code-line {
+  @apply -mx-4 block border-l-4 border-opacity-0 pl-4 pr-4;
+}
+
+.code-line.inserted {
+  @apply bg-green-500 bg-opacity-20;
+}
+
+.code-line.deleted {
+  @apply bg-red-500 bg-opacity-20;
+}
+
+.highlight-line {
+  @apply -mx-4 border-l-4 border-primary-500 bg-gray-700 bg-opacity-50;
+}
+
+.line-number::before {
+  @apply -ml-2 mr-4 inline-block w-4 text-right text-gray-400;
+  content: attr(line);
+}
+```
+
+## Componente de Newsletter (v1.1.3)
+
+Introduzido na v1.1.3, o componente de newsletter oferece uma forma simples de construir uma audiência. Ele se integra com os seguintes provedores:
+
+- [Mailchimp](https://mailchimp.com/)
+- [Buttondown](https://buttondown.email/)
+- [Convertkit](https://convertkit.com/)
+
+Para usá-lo, especifique o provedor que você está usando no arquivo de configuração e adicione as variáveis de ambiente necessárias ao arquivo `.env`.
+Para mais informações sobre as variáveis necessárias, consulte `.env.sample.`
+
+Dois componentes são exportados, um componente `NewsletterForm` padrão e um componente `BlogNewsletterForm`, que também é passado como componente MDX
+e pode ser usado em uma publicação do blog:
+
+```jsx
+<BlogNewsletterForm title="Like what you are reading?" />
+```
+
+<BlogNewsletterForm title="Like what you are reading?" />
+
+O componente depende das [rotas de API](https://nextjs.org/docs/api-routes/introduction) do nextjs, que exigem a configuração de uma instância do nextjs no lado do servidor,
+e não é compatível com uma exportação de site 100% estático. Os usuários devem se auto-hospedar ou usar uma plataforma compatível como Vercel ou Netlify que suporte essa funcionalidade.
+
+Uma alternativa compatível com sites estáticos é substituir a rota no componente de newsletter por um provedor de endpoint de API de formulário.
+
+## Bibliografia e citações (v1.2.1)
+
+O plugin `rehype-citation` foi adicionado ao pipeline de processamento do xdm na v1.2.1. Isso permite formatar citações facilmente e inserir uma bibliografia a partir de um arquivo bibtex ou CSL-json existente.
+
+Por exemplo, o seguinte código remark:
+
+```md
+Standard citation [@Nash1950]
+In-text citations e.g. @Nash1951
+Multiple citations [see @Nash1950; @Nash1951, page 50]
+
+**References:**
+
+[^ref]
+```
+
+será renderizado assim:
+
+Standard citation [@Nash1950]  
+In-text citations e.g. @Nash1951  
+Multiple citations [see @Nash1950; @Nash1951, page 50]
+
+**References:**
+
+[^ref]
+
+Uma bibliografia será inserida ao final do documento, mas isso pode ser sobrescrito especificando uma tag `[^Ref]` no local desejado.
+O plugin usa o formato de citação APA por padrão, mas também suporta os seguintes CSL: `apa`, `vancouver`, `harvard1`, `chicago`, `mla`, ou um caminho para um arquivo CSL especificado pelo usuário.
+
+Veja o [readme do rehype-citation](https://github.com/timlrx/rehype-citation) para mais informações sobre as opções de configuração.
+
+## Fonte auto-hospedada (v1.5.0)
+
+A fonte do Google foi substituída pela fonte auto-hospedada do [Fontsource](https://fontsource.org/). Isso traz os seguintes [benefícios](https://fontsource.org/docs/introduction):
+
+> A auto-hospedagem traz ganhos significativos de desempenho, já que carregar fontes de serviços hospedados, como o Google Fonts, resulta em uma requisição de rede adicional (bloqueando a renderização). Para dar uma perspectiva, em sites simples, observou-se que os tempos de carregamento visual dobraram.
+>
+> As fontes permanecem fixadas em versão. O Google frequentemente lança atualizações de suas fontes sem aviso prévio, o que pode interferir em seus projetos de produção ativos. Gerencie suas fontes como qualquer outra dependência NPM.
+>
+> Compromisso com a privacidade. O Google rastreia o uso de suas fontes e, para aqueles extremamente preocupados com privacidade, a auto-hospedagem é uma alternativa.
+
+Isso resulta em um conjunto de fontes menor e um tempo de carregamento 0,1 segundo mais rápido ([comparação no webpagetest](https://www.webpagetest.org/video/compare.php?tests=220201_AiDcFH_f68a69b758454dd52d8e67493fdef7da,220201_BiDcMC_bf2d53f14483814ba61e794 311dfa771)).
+
+Para alterar a fonte padrão Inter:
+
+1. Instale a [fonte](https://fontsource.org/fonts) preferida - `npm install -save @fontsource/<font-name>`
+2. Atualize o import em `pages/_app.js`- `import '@fontsource/<font-name>.css'`
+3. Atualize a propriedade `fontfamily` no arquivo de configuração CSS do tailwind
+
+## Guia de atualização
+
+Partes importantes do código foram alteradas da v0 para a v1, incluindo o suporte a layouts e um novo motor mdx.
+
+Também não há uma razão real para trocar se a versão anterior atende às suas necessidades, e pode ser mais fácil copiar
+o componente alterado que interessa a você para o seu blog existente, em vez de migrar tudo.
+
+Ainda assim, se você quiser fazer isso e não tiver modificado muito o modelo, pode clonar a nova versão e copiar a publicação do blog para o novo modelo.
+
+Outra alternativa seria buscar a versão mais recente do modelo com o seguinte código:
+
+```bash
+git remote add template git@github.com:timlrx/tailwind-nextjs-starter-blog.git
+git pull template v1 --allow-unrelated-histories
+rm -rf node_modules
+```
+
+Você pode ver um exemplo de tal migração neste [commit](https://github.com/timlrx/timlrx.com/commit/bba1c185384fd6d5cdaac15abf802fdcff027286) do meu blog pessoal.
+
+A v1 também usa `feed.xml` em vez de `index.xml`, para evitar alguns problemas de build com a Vercel. Se você estiver migrando, deve adicionar um redirecionamento em `next.config.js` assim:
+
+```js
+async redirects() {
+  return [
+    {
+      source: '/:path/index.xml',
+      destination: '/:path/feed.xml',
+      permanent: true,
+    }
+  ]
+}
+```

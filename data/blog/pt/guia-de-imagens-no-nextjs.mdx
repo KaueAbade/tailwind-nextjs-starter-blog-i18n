@@ -1,0 +1,74 @@
+---
+title: Imagens e Next.js
+date: '2020-11-11'
+language: pt
+tags: ['next-js', 'guide']
+authors: ['sparrowhawk']
+draft: false
+summary: Neste artigo, apresentamos a adição de imagens no blog de partida tailwind, bem como os benefícios e limitações do componente next/image.
+---
+
+# Introdução
+
+O Tailwind Starter Blog suporta imediatamente o [componente de imagem integrado do Next.js](https://nextjs.org/docs/api-reference/next/image) e substitui automaticamente as tags de imagem padrão em Markdown ou mdx para usar o componente Image fornecido.
+
+# Utilização
+
+Para usá-lo em um novo arquivo de rota de página/javascript, basta importar o componente de imagem e chamá-lo, por exemplo:
+
+```js
+import Image from 'next/image'
+
+function Home() {
+  return (
+    <>
+      <h1>My Homepage</h1>
+      <Image src="/me.png" alt="Picture of the author" width={500} height={500} />
+      <p>Welcome to my homepage!</p>
+    </>
+  )
+}
+
+export default Home
+```
+
+Para um arquivo markdown, a tag de imagem padrão pode ser usada e a tag `img` padrão é substituída pelo componente `Image` no processo de build.
+
+Supondo que temos um arquivo chamado "ocean.jpg" em "data/img/ocean.jpg", a linha de código a seguir geraria a imagem otimizada.
+
+```
+![ocean](/static/images/ocean.jpg)
+```
+
+Alternativamente, já que estamos usando mdx, podemos simplesmente usar o componente de imagem diretamente! Note que você precisará fornecer uma largura e altura fixas. O método de tag `img` analisa automaticamente a dimensão.
+
+```js
+<Image alt="ocean" src="/static/images/ocean.jpg" width={256} height={128} />
+```
+
+_Nota_: Se você tentar salvar a imagem, ela está em formato webp, caso seu navegador o suporte!
+
+![ocean](/static/images/ocean.jpeg)
+
+Foto de [YUCAR FotoGrafik](https://unsplash.com/@yucar?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+em [Unsplash](https://unsplash.com/s/photos/sea?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+
+# Benefícios
+
+- Tamanho de imagem menor com Webp (~30% menor que JPEG)
+- Imagens responsivas - o tamanho de imagem correto é servido de acordo com a viewport do usuário
+- Carregamento preguiçoso (lazy loading) - as imagens carregam à medida que rolam para dentro da viewport
+- Evita o [Cumulative Layout Shift](https://web.dev/cls/)
+- Otimização sob demanda em vez de tempo de build - nenhum aumento no tempo de build!
+
+
+# Limitações
+
+- Devido à dependência do `next/image`, a menos que você use um CDN de imagens externo como Cloudinary ou Imgix, é praticamente necessário usar a Vercel para hospedagem. Isso porque o componente atua como uma função serverless que chama um CDN de imagens altamente otimizado.
+
+   Se você não quiser ficar preso à Vercel, pode remover `imgToJsx` em `remarkPlugins` em `lib/mdx.js`. Isso evitaria a substituição da tag `img` padrão.
+
+   Alternativamente, pode-se esperar que a otimização de imagem em tempo de build seja suportada. Uma biblioteca diferente, [next-optimized-images](https://github.com/cyrilwanner/next-optimized-images), faz isso, embora exija a transformação das imagens via webpack, o que não é feito aqui.
+
+- Imagens vindas de links externos não são passadas pelo `next/image`
+- Todas as imagens devem ser armazenadas na pasta "public", por exemplo "/static/images/ocean.jpeg".

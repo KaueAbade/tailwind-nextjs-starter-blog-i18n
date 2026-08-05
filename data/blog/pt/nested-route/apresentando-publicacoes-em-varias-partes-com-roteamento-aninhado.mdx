@@ -1,0 +1,33 @@
+---
+title: Apresentando publicações em várias partes com roteamento aninhado
+date: '2021-05-02'
+language: pt
+tags: ['multi-autores', 'next-js', 'funcionalidades']
+authors: ['tailsazimuth']
+draft: false
+summary: O modelo de blog suporta publicações em subpastas aninhadas. Isso pode ser usado para agrupar publicações de conteúdo semelhante, por ex. um curso em várias partes. Este artigo é em si um exemplo de roteamento aninhado!
+---
+
+# Rotas aninhadas
+
+O modelo de blog suporta publicações em subpastas aninhadas. Isso ajuda na organização e pode ser usado para agrupar publicações de conteúdo semelhante, por ex. uma série em várias partes. Este artigo é em si um exemplo de rota aninhada! Ele está localizado na pasta `/data/blog/nested-route`.
+
+## Como?
+
+Basta criar várias pastas dentro da pasta principal `/data/blog` e adicionar seus arquivos `.md`/`.mdx` a elas. Você pode até criar algo como `/data/blog/nested-route/deeply-nested-route/my-post.md`
+
+Usamos as catch all routes do Next.js para lidar com a criação de roteamento e caminho.
+
+
+## Casos de uso
+
+Aqui estão algumas razões para usar rotas aninhadas:
+
+- Organização de conteúdo mais lógica (os blogs ainda serão exibidos com base na data de criação)
+- Artigos em várias partes
+- Sub-rotas diferentes para cada autor
+- Internacionalização (embora seja recomendado usar o [roteamento i18n integrado do Next.js](https://nextjs.org/docs/advanced-features/i18n-routing))
+
+## Nota
+
+- Os links de artigos anterior/próximo na parte inferior do modelo são atualmente ordenados por data. Seria possível considerar modificar o modelo para retornar o leitor à publicação anterior/próxima da série, em vez de por data.

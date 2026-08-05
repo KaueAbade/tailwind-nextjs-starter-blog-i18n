@@ -1,0 +1,195 @@
+---
+title: Apresentando o Starter Blog Tailwind Next-js V 2.0
+series:
+  order: 3
+  title: "Blog Starter"
+date: '2023-08-05'
+lastmod: '2023-08-05'
+language: pt
+tags: ['next-js', 'tailwind', 'guide', 'funcionalidades']
+authors: ['tailsazimuth']
+images: ['/static/images/twitter-card.png']
+draft: false
+summary: Apresentando o modelo Starter Blog Tailwind Next-js v2.0, refatorado com o Nextjs App Router e a configuração de React Server Components. Descubra as novas funcionalidades e como migrar a partir da V1.
+---
+
+## Introdução
+
+Bem-vindo ao novo modelo Starter Blog Tailwind Nextjs v2.0. Esta versão é uma grande refatoração da base de código para suportar o Nextjs App Router e os React Server Components. Continue lendo para descobrir as novas funcionalidades e como migrar a partir da V1.
+
+<TOCInline toc={props.toc} exclude="Introduction" />
+
+## Da V1 para a V2
+
+![Github Traffic](/static/images/github-traffic.png)
+
+O modelo foi publicado pela primeira vez em janeiro de 2021 e desde então tem sido usado por milhares de usuários. Foi apresentado nos [Modelos Next.js](https://vercel.com/templates/next.js/tailwind-css-starter-blog), [Tailwind Awesome](https://www.tailwindawesome.com/resources/tailwind-nextjs-starter-blog), entre outros sites de referência. Atrai mais de 200 visitantes únicos por dia, com entre 1.500 e 2.000 visualizações de página, com 13.000 forks e muitos outros clones.
+
+Um grande obrigado à comunidade de usuários e contribuidores por fazer deste modelo um sucesso! Criei uma pequena montagem em vídeo dos blogs (enquanto limpava a lista no readme) para destacar a diversidade dos blogs criados com o modelo e celebrar essa marca importante:
+
+<video controls>
+  <source
+    src="https://github-production-user-asset-6210df.s3.amazonaws.com/28362229/258559849-2124c81f-b99d-4431-839c-347e01a2616c.webm"
+    type="video/webm"
+  />
+</video>
+
+A versão 2 se baseia no sucesso da versão anterior e introduz muitas novas funcionalidades e melhorias. A base de código foi refatorada para suportar o app router do Next.js e os React Server Components. Markdown / MDX agora é processado usando o Contentlayer, um SDK de conteúdo "typesafe" graças ao typescript, que valida e transforma seu conteúdo em dados JSON com tipagem segura. Ele se integra com o Pliny, uma nova biblioteca que fornece componentes Next.js prontos para uso para melhorar seu site estático com analytics, comentários e assinatura de newsletter. Um novo componente de busca com paleta de comandos (⌘-k) também foi adicionado ao modelo.
+
+Vamos mergulhar nas novas funcionalidades e melhorias da V2.
+
+## App Router do Next.js e React Server Components
+
+Agora que o [app router do Next.js](https://nextjs.org/docs/app) finalmente está estável e é majoritariamente compatível com o Page Router, a base de código foi migrada para uma nova configuração. Isso permite uma abordagem de renderização híbrida, com o uso de React Server Components gerados no lado do servidor para carregamentos de página mais rápidos e bundles menores, mantendo a possibilidade de incorporar componentes React no lado do cliente para interatividade.[^1]
+
+Com novas possibilidades vem um [novo paradigma](https://nextjs.org/docs/getting-started/react-essentials) e sua curva de aprendizado. Migrei a base de código para aproveitar ao máximo as novas funcionalidades. Isso inclui mudanças na estrutura de pastas, a divisão dos componentes em componentes de servidor e cliente, o aproveitamento da busca de dados no lado do servidor e o uso da API de [metadados](https://nextjs.org/docs/app/building-your-application/optimizing/metadata) recomendada para SEO.
+
+Embora isso simplifique a base de código em certa medida, também torna a migração a partir da base de código antiga mais difícil. Se você deseja migrar, recomendo partir de um novo modelo e copiar suas personalizações e conteúdo existente. Confira a seção [recomendações de migração](#migration-recommendations) para mais detalhes.
+
+## Typescript First
+
+A base de código foi migrada para Typescript. Enquanto a versão anterior do modelo estava disponível em Javascript e Typescript, decidi reduzir a carga de manutenção e focar no Typescript. Isso também permite melhor verificação de tipos e melhor autocompletar de código nos IDEs.
+
+Typescript também se encaixa perfeitamente com nosso novo processador remark com tipagem segura - o Contentlayer.
+
+## Contentlayer
+
+[Contentlayer](https://www.contentlayer.dev/) é um SDK de conteúdo que valida e transforma seu conteúdo em dados JSON com tipagem segura, que você pode facilmente importar em sua aplicação. Isso facilita o trabalho com arquivos markdown locais ou MDX. Isso permite substituir o `MDX-bundler` e nosso próprio fluxo de processamento de markdown.
+
+Primeiro, uma fonte de conteúdo é definida, especificando o nome do tipo de documento, a origem onde ele se encontra, bem como os campos de frontmatter e quaisquer campos calculados adicionais que devem ser gerados como parte do processo.
+
+```ts:contentlayer.config.ts
+export const Blog = defineDocumentType(() => ({
+  name: 'Blog',
+  filePathPattern: 'blog/**/*.mdx',
+  contentType: 'mdx',
+  fields: {
+    title: { type: 'string', required: true },
+    date: { type: 'date', required: true },
+    tags: { type: 'list', of: { type: 'string' }, default: [] },
+    ...
+  },
+  computedFields: {
+    readingTime: { type: 'json', resolve: (doc) => readingTime(doc.body.raw) },
+    slug: {
+      type: 'string',
+      resolve: (doc) => doc._raw.flattenedPath.replace(/^.+?(\/)/, ''),
+    }
+    ...
+  },
+}))
+```
+
+O Contentlayer então processa os arquivos MDX com os plugins de Remark ou Rehype de markdown desejados, valida o schema, gera definições de tipo e produz arquivos json que podem ser facilmente importados em nossas páginas. O hot reload funciona nativamente, de forma que alterações nos arquivos markdown são imediatamente refletidas no navegador!
+
+## Pliny
+
+A popularidade do modelo se deve, em grande parte, à sua personalização e integração com outros serviços, de provedores de analytics a soluções de comentários. No entanto, isso significa que boa parte do código boilerplate precisa ficar co-localizado no modelo, mesmo que o usuário não use a funcionalidade. Atualizações e correções de bugs precisavam ser copiadas manualmente para a base de código do usuário.
+
+Para resolver isso, extraí a lógica para um diretório separado - [Pliny](https://github.com/timlrx/pliny). O Pliny fornece componentes Next.js prontos para uso para melhorar sites estáticos:
+
+- Analytics
+  - Google Analytics
+  - Plausible Analytics
+  - Simple Analytics
+  - Umami Analytics
+  - Posthog
+- Comentários
+  - Disqus
+  - Giscus
+  - Utterances
+- Newsletter (usa a API de rotas do Next 13)
+  - Buttondown
+  - Convertkit
+  - Email Octopus
+  - Klaviyo
+  - Mailchimp
+  - Revue
+- Busca com paleta de comandos e folha de estilo tailwind
+  - Algolia
+  - Kbar (busca local)
+- Componentes utilitários de interface
+  - Bleed
+  - Newsletter / Blog Newsletter
+  - Pre / Code block
+  - Table of Contents
+
+Escolha seu serviço preferido modificando `siteMetadata.js` e alterando os campos apropriados. Por exemplo, para trocar do Umami Analytics para o Plausible, você pode modificar os seguintes campos:
+
+```diff-js:siteMetadata.js
+analytics: {
+-   umamiAnalytics: {
+-     // We use an env variable for this site to avoid other users cloning our analytics ID
+-     umamiWebsiteId: process.env.NEXT_UMAMI_ID, // e.g. 123e4567-e89b-12d3-a456-426614174000
+-   },
++    plausibleAnalytics: {
++      plausibleDataDomain: '', // e.g. tailwind-nextjs-starter-blog.vercel.app
++    },
+},
+```
+
+As alterações no arquivo de configuração são automaticamente propagadas para os componentes. Nenhuma modificação do modelo é necessária.
+
+Por baixo dos panos, o Pliny exporta componentes de alto nível como `<Analytics AnalyticsConfig={analyticsConfig}/>` e `<Comments commentsConfig={commentsConfig}/>` que recebem um objeto de configuração e renderizam o componente apropriado. Como os layouts são definidos no lado do servidor, o Next.js consegue usar o objeto de configuração para determinar qual componente renderizar e enviar apenas o pacote de componentes necessário para o cliente.
+
+## Novo componente de busca
+
+O que é um blog em 2023 sem uma barra de busca com paleta de comandos?
+
+Uma das funcionalidades mais pedidas foi adicionada 🎉! O componente de busca suporta 2 provedores de busca: Algolia e busca local com Kbar.
+
+### Algolia
+
+[Algolia Docsearch](https://docsearch.algolia.com/) é um serviço gratuito popular usado em muitos sites de documentação. Ele indexa automaticamente o site enviado e disponibiliza o resultado da busca através de uma bela caixa de diálogo modal. O componente do Pliny se inspira fortemente na implementação do Docusaurus e vem com uma folha de estilo compatível com o tema CSS do Tailwind.
+
+### Kbar
+
+[Kbar](https://github.com/timc1/kbar) é uma interface cmd+k rápida, portátil e extensível. A implementação do Pliny usa o kbar para criar uma caixa de diálogo de busca local. O componente carrega um arquivo JSON, `search.json` por padrão, que foi criado durante o processo de build da camada de conteúdo. Experimente pressionar ⌘-k ou ctrl-k para ver a barra de busca em ação!
+
+## Atualizações de estilo e layout
+
+### Tema
+
+`tailwind.config.js` foi atualizado para usar os valores padrão da tipografia do tailwind sempre que possível, e para usar o suporte nativo ao modo escuro via a classe `prose-invert`. Isso substitui a classe e configuração anteriores `prose-dark`.
+
+A cor principal do tema foi atualizada de `teal` para `pink`, e o tema cinza principal de `neutral` para `gray`.
+
+Inter agora foi substituída por Space Grotesk como fonte padrão.
+
+### Novos layouts
+
+Os componentes de layout disponíveis no diretório `layouts` fornecem uma forma simples de personalizar a aparência do blog.[^2]
+
+A desvantagem de criar um modelo popular é que você começa a ver vários sites parecidos por toda parte 😆. Embora os usuários sejam incentivados a personalizar os layouts como quiserem, ter mais opções de layout facilmente intercambiáveis promove diversidade e talvez seja um bom ponto de partida para personalizações adicionais.
+
+Na v2, adicionei um novo layout de publicação - `PostBanner`. Ele apresenta uma grande imagem de banner e um contêiner de conteúdo centralizado. Confira a publicação "[Fotos do Canadá](/blog/fotos-do-canada)", que foi atualizada para usar o novo layout.
+
+O layout padrão da lista de blog também foi atualizado para incluir uma barra lateral com as tags do blog. A barra de busca no layout anterior foi substituída pela nova busca com paleta de comandos. Para voltar ao layout antigo, basta substituir as páginas que usam o componente `ListLayoutWithTags` pelo `ListLayout` original.
+
+## Recomendações de migração
+
+Devido às mudanças significativas na estrutura de diretórios, na configuração e nas ferramentas, recomendo partir de um novo modelo e copiar o conteúdo existente, migrando gradualmente as modificações para o novo modelo.
+
+As alterações de estilo devem ser relativamente pequenas e podem ser copiadas do antigo `tailwind.config.js` para o novo. Ao copiar, você pode precisar readicionar a classe `prose-dark` aos componentes que optam pelo estilo tipográfico do tailwind. Modifique o import de fontes no componente de layout raiz para usar a fonte desejada.
+
+As alterações no pipeline e no schema de processamento MDX podem ser facilmente transferidas para a nova configuração do Contentlayer. Se houver mudanças nos campos do frontmatter, você pode modificar o tipo de documento em `contentlayer.config.ts` para incluir os novos campos. Plugins personalizados podem ser adicionados às propriedades `remarkPlugins` e `rehypePlugins` na exportação `makeSource` de `contentlayer.config.ts`.
+
+Os layouts de Markdown não são mais resolvidos automaticamente a partir do diretório `layouts`. Em vez disso, devem ser especificados no objeto `layouts` definido em `blog/[...slug]/page.tsx`.[^3]
+
+Para portar componentes ou páginas maiores, recomendo primeiro especificá-los como um componente cliente usando a diretiva `"use client"`. Assim que a renderização estiver correta, você pode dividir os componentes interativos (partes que dependem de hooks `use`) como componente cliente e manter o restante do código como componente servidor. Confira o [guia de migração](https://nextjs.org/docs/app/building-your-application/upgrading/app-router-migration#migrating-from-pages-to-app) completo do Next.js para mais detalhes.
+
+## Conclusão
+
+Espero que você aproveite as novas funcionalidades e melhorias da V2. Se tiver comentários ou sugestões, sinta-se à vontade para abrir uma issue ou me contatar no [Twitter](https://twitter.com/timlrx).
+
+## Apoio
+
+Está usando o modelo? Apoie esse esforço dando uma estrela no GitHub, compartilhando seu próprio blog e divulgando no Twitter, ou tornando-se um [patrocinador](https://github.com/sponsors/timlrx) do projeto.
+
+## Licença
+
+[MIT](https://github.com/timlrx/tailwind-nextjs-starter-blog/blob/main/LICENSE) © [Timothy Lin](https://www.timrlx.com)
+
+[^1]: A versão anterior injetava Preact na build de produção. No entanto, isso não é mais possível pois não suporta React Server Components. Embora o tamanho total do bundle tenha aumentado para cerca de 85 Kb, a maior parte do conteúdo pode ser pré-renderizada no lado do servidor, resultando em tempos baixos de primeira renderização de conteúdo e de interatividade. O uso generalizado do React também leva a um comportamento mais consistente com bibliotecas e componentes externos.
+[^2]: Isso é diferente dos layouts do diretório de aplicação do Next.js e é melhor entendido como componentes React reutilizáveis.
+[^3]: Isso aproveita os componentes de servidor simplificando a especificação do layout de sua escolha no arquivo markdown e a comparação com o objeto `layouts`, que é então usado para renderizar o componente de layout apropriado.

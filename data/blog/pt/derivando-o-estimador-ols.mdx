@@ -1,0 +1,145 @@
+---
+title: Derivando o estimador OLS
+date: '2020-12-21'
+language: pt
+tags: ['next-js', 'math', 'ols']
+authors: ['tailsazimuth']
+draft: false
+summary: Como derivar o estimador OLS usando notação matricial e um passeio guiado pela composição matemática, usando markdown com a ajuda do KaTeX.
+---
+
+# Introdução
+
+A análise e a exibição de equações matemáticas estão incluídas neste modelo de blog. A análise matemática é habilitada pelo `remark-math` e pelo `rehype-katex`.
+O KaTeX e sua fonte associada estão incluídos em `_document.js`, então sinta-se à vontade para usá-lo em qualquer página.
+[^footnote]
+
+[^footnote]: Para a lista completa de funções TeX suportadas, consulte a [documentação do KaTeX](https://katex.org/docs/supported.html)
+
+Símbolos matemáticos em linha podem ser incluídos colocando o termo entre o símbolo "$".
+
+Blocos de código matemático são indicados por `$$`.
+
+Se você pretende usar o sinal `$` em vez de matemática, pode escapá-lo (`\$`) ou especificar a entidade HTML (`&dollar;`) [^2]
+
+Notas de rodapé em linha ou enumeradas manualmente também são suportadas. Clique nos links acima para vê-las em ação.
+
+[^2]: \$10 e &dollar;20.
+
+# Derivando o estimador OLS
+
+Usando a notação matricial, seja $n$ o número de observações e $k$ o número de regressores.
+
+O vetor das variáveis de resultado $\mathbf{Y}$ é uma matriz $n \times 1$,
+
+```tex
+\mathbf{Y} = \left[\begin{array}
+  {c}
+  y_1 \\
+  . \\
+  . \\
+  . \\
+  y_n
+\end{array}\right]
+```
+
+$$
+\mathbf{Y} = \left[\begin{array}
+  {c}
+  y_1 \\
+  . \\
+  . \\
+  . \\
+  y_n
+\end{array}\right]
+$$
+
+A matriz dos regressores $\mathbf{X}$ é uma matriz $n \times k$ (onde cada linha é um vetor $k \times 1$),
+
+```latex
+\mathbf{X} = \left[\begin{array}
+  {ccccc}
+  x_{11} & . & . & . & x_{1k} \\
+  . & . & . & . & .  \\
+  . & . & . & . & .  \\
+  . & . & . & . & .  \\
+  x_{n1} & . & . & . & x_{nn}
+\end{array}\right] =
+\left[\begin{array}
+  {c}
+  \mathbf{x}'_1 \\
+  . \\
+  . \\
+  . \\
+  \mathbf{x}'_n
+\end{array}\right]
+```
+
+$$
+\mathbf{X} = \left[\begin{array}
+  {ccccc}
+  x_{11} & . & . & . & x_{1k} \\
+  . & . & . & . & .  \\
+  . & . & . & . & .  \\
+  . & . & . & . & .  \\
+  x_{n1} & . & . & . & x_{nn}
+\end{array}\right] =
+\left[\begin{array}
+  {c}
+  \mathbf{x}'_1 \\
+  . \\
+  . \\
+  . \\
+  \mathbf{x}'_n
+\end{array}\right]
+$$
+
+O vetor dos termos de erro $\mathbf{U}$ também é uma matriz $n \times 1$.
+
+Às vezes, pode ser mais fácil usar a notação vetorial. Por questão de consistência, usarei o x minúsculo em negrito para denotar um vetor e letras maiúsculas para denotar uma matriz. Observações individuais são indicadas pelo subscrito.
+
+## Mínimos quadrados
+
+**Início**:  
+$$y_i = \mathbf{x}'_i \beta + u_i$$
+
+**Premissas**:
+
+1. Linearidade (dada acima)
+2. $E(\mathbf{U}|\mathbf{X}) = 0$ (independência condicional)
+3. rank($\mathbf{X}$) = $k$ (sem multicolinearidade, ou seja, rank completo)
+4. $Var(\mathbf{U}|\mathbf{X}) = \sigma^2 I_n$ (Homocedasticidade)
+
+**Objetivo**:  
+Encontrar $\beta$ que minimize a soma dos erros quadrados:
+
+$$
+Q = \sum_{i=1}^{n}{u_i^2} = \sum_{i=1}^{n}{(y_i - \mathbf{x}'_i\beta)^2} = (Y-X\beta)'(Y-X\beta)
+$$
+
+**Solução**:  
+Dicas: $Q$ é um escalar $1 \times 1$, por simetria $\frac{\partial b'Ab}{\partial b} = 2Ab$.
+
+Tomando a derivada matricial em relação a $\beta$:
+
+```tex
+\begin{aligned}
+  \min Q           & = \min_{\beta} \mathbf{Y}'\mathbf{Y} - 2\beta'\mathbf{X}'\mathbf{Y} +
+  \beta'\mathbf{X}'\mathbf{X}\beta \\
+                   & = \min_{\beta} - 2\beta'\mathbf{X}'\mathbf{Y} + \beta'\mathbf{X}'\mathbf{X}\beta \\
+  \text{[FOC]}~~~0 & =  - 2\mathbf{X}'\mathbf{Y} + 2\mathbf{X}'\mathbf{X}\hat{\beta}                  \\
+  \hat{\beta}      & = (\mathbf{X}'\mathbf{X})^{-1}\mathbf{X}'\mathbf{Y}                              \\
+                   & = (\sum^{n} \mathbf{x}_i \mathbf{x}'_i)^{-1} \sum^{n} \mathbf{x}_i y_i
+\end{aligned}
+```
+
+$$
+\begin{aligned}
+  \min Q           & = \min_{\beta} \mathbf{Y}'\mathbf{Y} - 2\beta'\mathbf{X}'\mathbf{Y} +
+  \beta'\mathbf{X}'\mathbf{X}\beta \\
+                   & = \min_{\beta} - 2\beta'\mathbf{X}'\mathbf{Y} + \beta'\mathbf{X}'\mathbf{X}\beta \\
+  \text{[FOC]}~~~0 & =  - 2\mathbf{X}'\mathbf{Y} + 2\mathbf{X}'\mathbf{X}\hat{\beta}                  \\
+  \hat{\beta}      & = (\mathbf{X}'\mathbf{X})^{-1}\mathbf{X}'\mathbf{Y}                              \\
+                   & = (\sum^{n} \mathbf{x}_i \mathbf{x}'_i)^{-1} \sum^{n} \mathbf{x}_i y_i
+\end{aligned}
+$$

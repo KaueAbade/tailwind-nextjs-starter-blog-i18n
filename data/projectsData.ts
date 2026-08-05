@@ -10,6 +10,24 @@ type ProjectsData = {
 }
 
 const projectsData: ProjectsData = {
+  pt: [
+    {
+      title: 'Um motor de busca',
+      description: `E se você pudesse pesquisar qualquer informação no mundo? Páginas da web, imagens, vídeos
+        e muito mais. O Google oferece diversos recursos para ajudar você a encontrar exatamente o que procura.`,
+      imgSrc: '/static/images/google.png',
+      href: 'https://www.google.com',
+    },
+    {
+      title: 'A Máquina do Tempo',
+      description: `Imagine poder viajar no tempo, para o passado ou para o futuro. Basta girar o botão
+        para a data desejada e pressionar "Ir". Não se preocupe mais com chaves perdidas ou
+        fones de ouvido esquecidos com esta solução simples e acessível.`,
+      imgSrc: '/static/images/time-machine.jpg',
+      href: '/blog/a-maquina-do-tempo',
+    },
+  ],
+
   en: [
     {
       title: 'A Search Engine',
@@ -25,25 +43,7 @@ const projectsData: ProjectsData = {
         to the desired date and press "Go". No more worrying about lost keys or
         forgotten headphones with this simple yet affordable solution.`,
       imgSrc: '/static/images/time-machine.jpg',
-      href: '/blog/the-time-machine',
-    },
-  ],
-
-  fr: [
-    {
-      title: 'Un moteur de recherche',
-      description: `Et si vous pouviez rechercher n'importe quelle information dans le monde ? Pages Web, images, vidéos
-        et plus. Google propose de nombreuses fonctionnalités pour vous aider à trouver exactement ce que vous cherchez.`,
-      imgSrc: '/static/images/google.png',
-      href: 'https://www.google.com',
-    },
-    {
-      title: 'La Machine à remonter le temps',
-      description: `Imaginez pouvoir voyager dans le temps ou vers le futur. Tournez simplement le bouton
-        à la date souhaitée et appuyez sur "Go". Ne vous inquiétez plus des clés perdues ou
-        écouteurs oubliés avec cette solution simple mais abordable.`,
-      imgSrc: '/static/images/time-machine.jpg',
-      href: '/blog/the-time-machine',
+      href: '/blog/a-maquina-do-tempo',
     },
   ],
 }

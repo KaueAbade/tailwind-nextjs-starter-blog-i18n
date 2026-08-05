@@ -1,0 +1,200 @@
+---
+title: Guia de Markdown
+date: '2019-10-11'
+language: pt
+tags: ['github', 'guide']
+authors: ['tailsazimuth']
+draft: false
+summary: Cola de Markdown para todas as suas necessidades de blog - cabeçalhos, listas, imagens, tabelas e muito mais! Um guia ilustrado baseado no GitHub Flavored Markdown.
+---
+
+# Introdução
+
+A análise de Markdown e Mdx é suportada via "unified" e outros pacotes remark e rehype. O `next-mdx-remote` nos permite analisar arquivos `.mdx` e `.md` de forma mais flexível sem mexer no webpack.
+
+É usado o GitHub Flavored Markdown. O `mdx-prism` fornece recursos de destaque de sintaxe para blocos de código. Aqui está uma demonstração de como tudo se parece.
+
+A cola de markdown a seguir é adaptada de: https://guides.github.com/features/mastering-markdown/
+
+# O que é Markdown?
+
+Markdown é uma forma de estilizar texto na web. Você controla a exibição do documento; formatar palavras em negrito ou itálico, adicionar imagens e criar listas são apenas algumas das coisas que podemos fazer com Markdown. Na maior parte do tempo, Markdown é apenas texto comum com alguns caracteres não alfabéticos, como `#` ou `*`.
+
+# Guia de sintaxe
+
+Aqui está uma visão geral da sintaxe Markdown que você pode usar em qualquer lugar no GitHub.com ou em seus próprios arquivos de texto.
+
+## Cabeçalhos
+
+```
+# Esta é uma tag h1
+
+## Esta é uma tag h2
+
+#### Esta é uma tag h4
+```
+
+# Esta é uma tag h1
+
+## Esta é uma tag h2
+
+#### Esta é uma tag h4
+
+## Ênfase
+
+```
+_Este texto ficará em itálico_
+
+**Este texto ficará em negrito**
+
+_Você **pode** combiná-los_
+```
+
+_Este texto ficará em itálico_
+
+**Este texto ficará em negrito**
+
+_Você **pode** combiná-los_
+
+## Listas
+
+### Não ordenada
+
+```
+- Item 1
+- Item 2
+   - Item 2a
+   - Item 2b
+```
+
+- Item 1
+- Item 2
+   - Item 2a
+   - Item 2b
+
+### Ordenada
+
+```
+1. Item 1
+1. Item 2
+1. Item 3
+    1. Item 3a
+    1. Item 3b
+```
+
+1. Item 1
+1. Item 2
+1. Item 3
+    1. Item 3a
+    1. Item 3b
+
+## Imagens
+
+```
+![Logo do GitHub](https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png)
+Formato: ![Texto alternativo](url)
+```
+
+![Logo do GitHub](https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png)
+
+## Links
+
+```
+http://github.com - automático!
+[GitHub](http://github.com)
+```
+
+http://github.com - automático!
+[GitHub](http://github.com)
+
+## Citações
+
+```
+Como disse Kanye West:
+
+> Vivemos no futuro, então
+> o presente é o nosso passado.
+```
+
+Como disse Kanye West:
+
+> Vivemos no futuro, então
+> o presente é o nosso passado.
+
+## Código em linha
+
+```
+Acho que você deveria usar um
+`<addr>` aqui em vez disso.
+```
+
+Acho que você deveria usar um
+`<addr>` aqui em vez disso.
+
+## Destaque de sintaxe
+
+Aqui está um exemplo de como você pode usar destaque de sintaxe com [GitHub Flavored Markdown](https://help.github.com/articles/basic-writing-and-formatting-syntax/):
+
+````
+```js:fancyAlert.js
+function fancyAlert(arg) {
+   if (arg) {
+     $.facebox({div: '#foo' })
+   }
+}
+```
+````
+
+E é assim que fica: bem colorido com títulos de código estilizados!
+
+```js:fancyAlert.js
+function fancyAlert(arg) {
+   if (arg) {
+     $.facebox({div: '#foo' })
+   }
+}
+```
+
+## Notas de rodapé
+
+```
+Aqui está uma nota de rodapé simples[^1]. Com um pouco de texto extra depois.
+
+[^1]: Minha referência.
+```
+
+Aqui está uma nota de rodapé simples[^1]. Com um pouco de texto extra depois.
+
+[^1]: Minha referência.
+
+## Listas de tarefas
+
+```
+- Sintaxe de lista [x] necessária (qualquer lista ordenada ou não ordenada é suportada)
+- [x] este é um item completo
+- [ ] este é um item incompleto
+```
+
+- Sintaxe de lista [x] necessária (qualquer lista ordenada ou não ordenada é suportada)
+- [x] este é um item completo
+- [ ] este é um item incompleto
+
+## Tabelas
+
+Você pode criar tabelas montando uma lista de palavras e dividindo-as com hífens `-` (para a primeira linha), e então separando cada coluna com uma barra vertical `|`:
+
+```
+| Primeiro cabeçalho | Segundo cabeçalho |
+| -------------------------------- | ---------------------------- |
+| Conteúdo da célula 1 | Conteúdo da célula 2 |
+| Conteúdo na primeira coluna | Conteúdo na segunda coluna |
+```
+
+| Primeiro cabeçalho | Segundo cabeçalho |
+| -------------------------------- | ---------------------------- |
+| Conteúdo da célula 1 | Conteúdo da célula 2 |
+| Conteúdo na primeira coluna | Conteúdo na segunda coluna |
+
+## Tachado
+
+Qualquer palavra envolta por dois tis (como `~~isto~~`) aparecerá ~~tachada~~.
