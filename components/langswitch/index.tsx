@@ -92,7 +92,7 @@ const LangSwitch = (): JSX.Element => {
               leaveTo="opacity-0 scale-95 translate-y-[10px]"
             >
               <MenuItems
-                className="ring-opacity-5 absolute right-0 z-50 mt-2 w-12 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black focus:outline-none dark:bg-gray-800"
+                className="ring-opacity-5 absolute right-0 z-50 mt-2 w-12 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black focus:outline-none dark:bg-gray-900"
                 aria-orientation="vertical"
                 onBlur={handleMenuBlur}
               >
