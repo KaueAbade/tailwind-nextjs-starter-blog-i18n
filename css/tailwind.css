@@ -1,5 +1,5 @@
 @import './waline.css';
-@import "tailwindcss";
+@import 'tailwindcss';
 @config "../tailwind.config.js";
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -35,17 +35,17 @@
   --color-heading-900: #1e3a8a;
   --color-heading-950: #172554;
 
-  --color-gray-50: #f9fafb;
-  --color-gray-100: #f3f4f6;
-  --color-gray-200: #e5e7eb;
-  --color-gray-300: #d1d5db;
-  --color-gray-400: #9ca3af;
-  --color-gray-500: #6b7280;
-  --color-gray-600: #4b5563;
-  --color-gray-700: #374151;
-  --color-gray-800: #1f2937;
-  --color-gray-900: #111827;
-  --color-gray-950: #030712;
+  --color-gray-50: #ffffff;
+  --color-gray-100: #ffffff;
+  --color-gray-200: #d6d8d9;
+  --color-gray-300: #adb0b2;
+  --color-gray-400: #85898c;
+  --color-gray-500: #5c6165;
+  --color-gray-600: #333a3f;
+  --color-gray-700: #292e32;
+  --color-gray-800: #1f2326;
+  --color-gray-900: #141719;
+  --color-gray-950: #0a0c0d;
 
   --z-60: 60;
   --z-70: 70;
@@ -61,7 +61,6 @@
   color utility to any element that depends on these defaults.
 */
 @layer base {
-
   *,
   ::after,
   ::before,
@@ -135,17 +134,17 @@
 }
 
 .top-2 {
-  top: .5rem;
+  top: 0.5rem;
 }
 
 .bg-gray-700 {
   --tw-bg-opacity: 1;
-  background-color: rgb(55 65 81/var(--tw-bg-opacity));
+  background-color: rgb(55 65 81 / var(--tw-bg-opacity));
 }
 
 .text-gray-300 {
   --tw-text-opacity: 1;
-  color: rgb(209 213 219/var(--tw-text-opacity));
+  color: rgb(209 213 219 / var(--tw-text-opacity));
 }
 
 .border-green-400 {
