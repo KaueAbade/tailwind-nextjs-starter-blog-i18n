@@ -93,6 +93,7 @@ export default async function RootLayout({
       lang={locale}
       dir={dir(locale)}
       className={`${space_grotesk.variable} scroll-smooth`}
+      data-scroll-behavior="smooth"
       suppressHydrationWarning
     >
       <link rel="apple-touch-icon" sizes="76x76" href="/static/favicons/apple-touch-icon.png" />
